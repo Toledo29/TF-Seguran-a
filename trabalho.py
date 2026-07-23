@@ -100,7 +100,7 @@ def main():
 
     with open('relatorio_classificacao.txt', 'w') as f:
         f.write("=== RELATÓRIO DE CLASSIFICAÇÃO ===\n")
-        f.write(classification_report(y_test, y_pred, targetnames=le.classes_))
+        f.write(classification_report(y_test, y_pred, target_names=le.classes_))
         f.write(f"\nAcurácia Geral: {accuracy_score(y_test, y_pred)*100:.2f}%\n")
     print("[+] Relatório salvo em 'relatorio_classificacao.txt'")
     
