@@ -64,6 +64,7 @@ def main():
     print("\n=== Relatório Detalhado ===")
     print(classification_report(y_test, y_pred, target_names=le.classes_))
 
+    # Importância das features
     importancias = pd.Series(rf.feature_importances_, index=X.columns)
     top_features = importancias.sort_values(ascending=False).head(10)
 
@@ -80,20 +81,43 @@ def main():
     print("\n[+] Features mais relevantes:")
     print(top_features)
 
+    # Matriz de confusão normalizada 
+    fig, ax = plt.subplots(figsize=(16, 12))
 
-    plt.figure(figsize=(12,10))
-    ConfusionMatrixDisplay.from_estimator(rf, X_test, y_test, 
-                                        display_labels=le.classes_, 
-                                        cmap='Blues', 
-                                        normalize='true')
-    plt.title('Matriz de Confusão Normalizada (Proporção de Acertos por Classe)')
+    disp = ConfusionMatrixDisplay.from_estimator(
+        rf,
+        X_test,
+        y_test,
+        display_labels=le.classes_,
+        cmap="Blues",
+        normalize="true",
+        xticks_rotation=45,
+        ax=ax
+    )
+
+    ax.set_title(
+        "Matriz de Confusão Normalizada",
+        fontsize=18
+    )
+
+    ax.tick_params(axis='x', labelsize=11)
+    ax.tick_params(axis='y', labelsize=11)
+
     plt.tight_layout()
-    plt.savefig('matriz_confusao.png')
+
+    plt.savefig(
+        "matriz_confusao.png",
+        dpi=300,
+        bbox_inches="tight"
+    )
+
     plt.show()
 
+    # Acurácia por 5-fold
     scores = cross_val_score(rf, X, y_enc, cv=5, scoring='accuracy')
     print(f"\n[+] Acurácia média com Validação Cruzada (5-fold): {scores.mean()*100:.2f}% (+/- {scores.std()*100:.2f}%)")
 
+    # Salvamento do arquivo
     joblib.dump(rf, 'modelo_rf.pkl')
     joblib.dump(le, 'label_encoder.pkl')
     print("[+] Modelo e encoder salvos em disco.")
