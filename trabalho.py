@@ -3,7 +3,10 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import classification_report, accuracy_score
+from sklearn.metrics import classification_report, accuracy_score, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
+from sklearn.model_selection import cross_val_score
+import joblib
 
 def main():
 
@@ -61,6 +64,45 @@ def main():
     print("\n=== Relatório Detalhado ===")
     print(classification_report(y_test, y_pred, target_names=le.classes_))
 
+    importancias = pd.Series(rf.feature_importances_, index=X.columns)
+    top_features = importancias.sort_values(ascending=False).head(10)
+
+    plt.figure(figsize=(10,6))
+    top_features.plot(kind='barh', color='steelblue')
+    plt.title('Top 10 Features para Classificação de Tráfego')
+    plt.xlabel('Importância')
+    plt.ylabel('Feature')
+    plt.gca().invert_yaxis()
+    plt.tight_layout()
+    plt.savefig('importancia_features.png')
+    plt.show()
+
+    print("\n[+] Features mais relevantes:")
+    print(top_features)
+
+
+    plt.figure(figsize=(12,10))
+    ConfusionMatrixDisplay.from_estimator(rf, X_test, y_test, 
+                                        display_labels=le.classes_, 
+                                        cmap='Blues', 
+                                        normalize='true')
+    plt.title('Matriz de Confusão Normalizada (Proporção de Acertos por Classe)')
+    plt.tight_layout()
+    plt.savefig('matriz_confusao.png')
+    plt.show()
+
+    scores = cross_val_score(rf, X, y_enc, cv=5, scoring='accuracy')
+    print(f"\n[+] Acurácia média com Validação Cruzada (5-fold): {scores.mean()*100:.2f}% (+/- {scores.std()*100:.2f}%)")
+
+    joblib.dump(rf, 'modelo_rf.pkl')
+    joblib.dump(le, 'label_encoder.pkl')
+    print("[+] Modelo e encoder salvos em disco.")
+
+    with open('relatorio_classificacao.txt', 'w') as f:
+        f.write("=== RELATÓRIO DE CLASSIFICAÇÃO ===\n")
+        f.write(classification_report(y_test, y_pred, targetnames=le.classes_))
+        f.write(f"\nAcurácia Geral: {accuracy_score(y_test, y_pred)*100:.2f}%\n")
+    print("[+] Relatório salvo em 'relatorio_classificacao.txt'")
     
 if __name__ == "__main__":
     main()

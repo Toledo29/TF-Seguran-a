@@ -1,1 +1,6 @@
 venv/
+importancia_features.png
+label_encoder.pkl
+matriz_confusao.png
+modelo_rf.pkl
+relatorio_classificacao.txt
